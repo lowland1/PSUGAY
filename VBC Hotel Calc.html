@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="VBC Hotel">
+<title>VBC Hotel Calc</title>
+<style>
+:root{box-sizing:border-box;--bg:#f2f2f7;--card:#fff;--text:#111;--muted:#6b6b76;--accent:#0a60d0;--ok:#1a8f3c;--warn:#c9341f;--line:#e0e0e6;
+padding-top:env(safe-area-inset-top,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#000;--card:#1c1c1e;--text:#f2f2f7;--muted:#98989f;--accent:#4d9bff;--ok:#43d067;--warn:#ff6b57;--line:#2c2c2e}}
+:root[data-theme="dark"]{--bg:#000;--card:#1c1c1e;--text:#f2f2f7;--muted:#98989f;--accent:#4d9bff;--ok:#43d067;--warn:#ff6b57;--line:#2c2c2e}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:16px -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;padding:12px 12px 90px}
+h1{font-size:22px;margin:4px 4px 12px}
+.card{background:var(--card);border-radius:14px;padding:14px;margin-bottom:12px}
+.row{display:flex;gap:10px;margin-bottom:10px}
+.row>label{flex:1;font-size:12px;color:var(--muted);display:block}
+input,select{width:100%;margin-top:4px;font-size:22px;padding:10px;border-radius:10px;border:1px solid var(--line);background:var(--bg);color:var(--text)}
+.big{font-size:44px;font-weight:700;color:var(--accent);line-height:1.1}
+.muted{color:var(--muted);font-size:13px}
+.ok{color:var(--ok);font-weight:600}.bad{color:var(--warn);font-weight:600}
+table{width:100%;border-collapse:collapse;font-size:15px}
+td,th{padding:8px 4px;border-bottom:1px solid var(--line);text-align:left}
+th{font-size:12px;color:var(--muted)}
+td.r{text-align:right;font-weight:600}
+ul{margin:6px 0 0;padding-left:20px}li{margin:4px 0}
+nav{position:fixed;left:0;right:0;bottom:0;display:flex;background:var(--card);border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom,0px)}
+nav button{flex:1;border:0;background:none;color:var(--muted);padding:8px 0;font-size:11px}
+nav button span{display:block;font-size:22px}
+nav button.on{color:var(--accent)}
+section{display:none}section.on{display:block}
+</style>
+</head>
+<body>
+<h1>🏨 VBC Hotel Calc</h1>
+
+<section id="hk" class="on">
+<div class="card">
+<div class="row">
+<label>Full Cleans (F)<input id="hkF" type="number" inputmode="numeric" placeholder="62"></label>
+<label>Tidies (T)<input id="hkT" type="number" inputmode="numeric" placeholder="19"></label>
+<label>Shift hrs (t)<input id="hkt" type="number" inputmode="decimal" value="7"></label>
+</div>
+<div class="muted">Housekeepers needed</div>
+<div class="big" id="hkOut">–</div>
+<div class="muted" id="hkSub">n = ⌈(F + T/3) ÷ t⌉ · 1 hr per Full Clean, 1/3 hr per Tidy</div>
+</div>
+<div class="card muted">Tip: ceil trick — find the nearest multiple below (98 = 7×14), so 100÷7 rounds up to 15. Guide's usual shift: 7 hrs, 10am–5pm.</div>
+</section>
+
+<section id="fd">
+<div class="card">
+<div class="row">
+<label>Arrivals today<input id="fdA" type="number" inputmode="numeric" placeholder="45"></label>
+<label>Departures today<input id="fdD" type="number" inputmode="numeric" placeholder="52"></label>
+</div>
+<div id="fdOut" class="muted">Enter arrivals and departures.</div>
+</div>
+<div class="card muted">Front Desk = $17/hr, min 4-hr shifts. Nobody needed 12am–5am. Busiest: ~10am check-outs, 6–7pm check-ins.</div>
+</section>
+
+<section id="pr">
+<div class="card">
+<div class="row">
+<label>Competitor Meridian ($)<input id="prM" type="number" inputmode="decimal" placeholder="150"></label>
+<label>Your price ($)<input id="prP" type="number" inputmode="decimal" placeholder="140"></label>
+</div>
+<div id="prPct" class="muted">Price as % of meridian: –</div>
+</div>
+<div class="card">
+<table id="prTbl"><tr><th>Day type</th><th>Price</th><th>Restr.</th></tr></table>
+</div>
+<div class="card muted">Set restrictions BEFORE prices. No group sales on event weekends (except a few Sundays). Event Fridays: 120%+ of meridian. These are the author's own settings — tweak them.</div>
+</section>
+
+<section id="gr">
+<div class="card">
+<div class="row">
+<label>Meridian / Gen. Room price ($)<input id="grM" type="number" inputmode="decimal" placeholder="150"></label>
+<label>Group size<input id="grS" type="number" inputmode="numeric" placeholder="30"></label>
+</div>
+<div class="row">
+<label>Highest occupancy during their stay<input id="grO" type="number" inputmode="numeric" placeholder="70"></label>
+<label>Event weekend?<select id="grE"><option value="0">No</option><option value="1">Yes</option></select></label>
+</div>
+<div id="grOut" class="muted">Fill in the fields.</div>
+</div>
+<div class="card muted">Bid per person. Guide's range: $15–$40 under the General Room price; big or long groups expect bigger discounts. Capacity guideline: occupancy + group ≤ 95 (suites aren't offered to groups). Pick groups that fill low-demand days (Thu/Sun) and multi-night stays.</div>
+</section>
+
+<section id="mo">
+<div class="card">
+<b>ICDC pace</b>
+<div class="row" style="margin-top:8px">
+<label>Minutes remaining<input id="pcM" type="number" inputmode="decimal" placeholder="10"></label>
+<label>Game days / min<input id="pcD" type="number" inputmode="decimal" placeholder="3"></label>
+</div>
+<div class="muted">Furthest in-game day reachable</div>
+<div class="big" id="pcOut">–</div>
+<div class="muted">Minutes × days/min. Start the sim immediately — a week head start won ICDC.</div>
+</div>
+<div class="card">
+<b>Advertising target</b>
+<div class="row" style="margin-top:8px">
+<label>Business % of demand<input id="adB" type="number" inputmode="decimal" placeholder="40"></label>
+<label>Events in month<input id="adE" type="number" inputmode="numeric" placeholder="3"></label>
+</div>
+<div id="adOut" class="muted">Enter Market Data Report numbers.</div>
+</div>
+<div class="card muted">Other rules: Overbooking 0%. On guest complaints pick option 2 (pay for another hotel). Only the Main Lobby view runs fastest. Don't bid on event weekends.</div>
+</section>
+
+<nav>
+<button class="on" data-t="hk"><span>🧹</span>Housekeep</button>
+<button data-t="fd"><span>🛎️</span>Front Desk</button>
+<button data-t="pr"><span>💲</span>Prices</button>
+<button data-t="gr"><span>👥</span>Groups</button>
+<button data-t="mo"><span>⚡</span>More</button>
+</nav>
+
+<script>
+const $=id=>document.getElementById(id), v=id=>parseFloat($(id).value);
+const ok=x=>isFinite(x);
+document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>{
+  document.querySelectorAll('nav button,section').forEach(e=>e.classList.remove('on'));
+  b.classList.add('on');$(b.dataset.t).classList.add('on');scrollTo(0,0);
+});
+
+function hk(){
+  const F=v('hkF'),T=isNaN(v('hkT'))?0:v('hkT'),t=v('hkt');
+  if(!ok(F)||!ok(t)||t<=0){$('hkOut').textContent='–';return}
+  const hrs=F+T/3, n=Math.ceil(hrs/t-1e-9);
+  $('hkOut').textContent=n;
+  $('hkSub').textContent=hrs.toFixed(1)+' work-hrs ÷ '+t+'-hr shifts = '+(hrs/t).toFixed(2)+' → '+n;
+}
+function fd(){
+  const A=v('fdA'),D=v('fdD');
+  if(!ok(A)&&!ok(D)){return}
+  const a=ok(A)?A:0,d=ok(D)?D:0;
+  let extras=[],ci=1;
+  let h='<ul><li><b>Baseline:</b> 1 associate 5am–12am → shifts 5am–12pm, 12–6pm, 6pm–12am (7/6/6 hrs)</li>';
+  if(a>=40){h+='<li><b>+1 check-in</b> 4-hr shift around 6–7pm (e.g. 5–9pm)</li>';extras.push(4)}
+  if(a>=80){h+='<li><b>+1 more check-in</b> 4-hr shift (3 total at peak)</li>';extras.push(4)}
+  if(d>=50){h+='<li><b>+1 check-out</b> 4-hr shift around 10am (e.g. 8am–12pm)</li>';extras.push(4)}
+  if(!extras.length)h+='<li>No extra associates needed</li>';
+  const hrs=19+extras.reduce((s,x)=>s+x,0);
+  h+='</ul><p style="margin:10px 0 0"><b>'+hrs+' labor hrs · $'+(hrs*17)+'</b> for the day</p>';
+  $('fdOut').innerHTML=h;
+}
+function pr(){
+  const m=v('prM'),p=v('prP');
+  $('prPct').textContent=(ok(m)&&ok(p)&&m>0)?'Price is '+(p/m*100).toFixed(1)+'% of meridian ('+(p-m>=0?'+':'')+(p-m)+'$)':'Price as % of meridian: –';
+  const rows=[['Mon / Tue / Wed',0,1,'—'],['Thursday',-20,1,'—'],['Fri (no event)',-10,1,'—'],['Fri EVENT',0,1.2,'MS3'],['Sat after event Fri',0,1,'MS2'],['Saturday (other)',0,1,'—'],['Sun after event Fri',0,1,'—'],['Sun (no event)',-20,1,'—']];
+  let h='<tr><th>Day type</th><th>Price</th><th>Restr.</th></tr>';
+  rows.forEach(r=>{
+    const price=ok(m)?'$'+Math.round(m*r[2]+r[1])+(r[2]>1?'+':''):'–';
+    h+='<tr><td>'+r[0]+'</td><td class="r">'+price+'</td><td>'+r[3]+'</td></tr>';
+  });
+  $('prTbl').innerHTML=h;
+}
+function gr(){
+  const m=v('grM'),s=v('grS'),o=v('grO'),ev=$('grE').value==='1';
+  if(!ok(m)){return}
+  let h='<table><tr><th>Bid style</th><th>Per person</th></tr>'+
+  '<tr><td>Aggressive (−$40)</td><td class="r">$'+(m-40)+'</td></tr>'+
+  '<tr><td>Standard (−$20)</td><td class="r">$'+(m-20)+'</td></tr>'+
+  '<tr><td>Greedy (−$15)</td><td class="r">$'+(m-15)+'</td></tr></table>';
+  if(ev)h+='<p class="bad">Event weekend → don\'t bid. Keep rooms for transients.</p>';
+  if(ok(s)&&ok(o)){
+    const tot=o+s;
+    h+='<p>Occupancy with group: <b>'+tot+'</b> / 95 → '+(tot<=95?'<span class="ok">fits ✓</span>':'<span class="bad">likely won\'t fit ✗ ('+(tot-95)+' over)</span>')+'</p>';
+  }
+  $('grOut').innerHTML=h;
+}
+function pace(){
+  const m=v('pcM'),d=v('pcD');
+  $('pcOut').textContent=(ok(m)&&ok(d))?'Day '+(m*d).toFixed(1):'–';
+}
+function ad(){
+  const b=v('adB'),e=v('adE');
+  if(!ok(b)){return}
+  let h='Target <b>'+(b>=40?'Business':'Leisure')+'</b> customers ('+(b>=40?'≥':'<')+'40% business).';
+  if(ok(e)){
+    h+=e<=1?' Few events → weekends empty → <b>push Group ads</b> too.':' Plenty of events → transients fill weekends; groups mainly for Thu/Sun.';
+  }
+  h+='<br>Spread 1–2 units per option (diminishing returns); favor pricier options; stay under budget.';
+  $('adOut').innerHTML=h;
+}
+[['hkF','hkT','hkt'],['fdA','fdD'],['prM','prP'],['grM','grS','grO','grE'],['pcM','pcD'],['adB','adE']].forEach((g,i)=>{
+  const f=[hk,fd,pr,gr,pace,ad][i];
+  g.forEach(id=>$(id).addEventListener('input',f));
+  g.forEach(id=>$(id).addEventListener('change',f));
+});
+pr();
+</script>
+</body>
+</html>
